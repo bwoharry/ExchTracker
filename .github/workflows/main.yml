@@ -1,0 +1,39 @@
+import ccxt
+
+def get_prices(exchange_ids, symbols):
+    prices = {}
+
+    for exchange_id in exchange_ids:
+        try:
+            exchange = getattr(ccxt, exchange_id)()
+            exchange.load_markets()
+
+            for symbol in symbols:
+                if symbol in exchange.symbols:
+                    if exchange_id not in prices:
+                        prices[exchange_id] = {}
+                    ticker = exchange.fetch_ticker(symbol)
+                    prices[exchange_id][symbol] = ticker['last']
+                else:
+                    print(f'Para handlowa {symbol} nie jest dostępna na giełdzie {exchange_id}')
+        except Exception as e:
+            print(f'Błąd podczas pobierania danych z giełdy {exchange_id}: {str(e)}')
+
+    return prices
+
+def display_prices(prices):
+    for exchange_id, symbols in prices.items():
+        print(f'Giełda: {exchange_id}')
+        for symbol, price in symbols.items():
+            print(f'{symbol}: {price}')
+        print()
+
+def main():
+    exchange_ids = ['mexc', 'binance', 'kucoin', 'bybit']
+    symbols = ['USDC/USDT', 'ETH/USDT', 'BTC/USDT', 'SOL/USDT']  # Dodaj inne tokeny, których ceny chcesz śledzić
+
+    prices = get_prices(exchange_ids, symbols)
+    display_prices(prices)
+
+if __name__ == "__main__":
+    main()
